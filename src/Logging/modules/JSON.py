@@ -79,7 +79,8 @@ class JSON(object):
                         "files"       : [],
                         "connections" : [],
                         "locations"   : [],
-                        "exploits"    : []
+                        "exploits"    : [],
+                        "yara_matched"    : [],
                     }
 
     @property
@@ -215,6 +216,15 @@ class JSON(object):
             return
 
         self.add_behavior(description, cve, method)
+
+    def add_yara_matched(self, description = None, cve = None, method = "Dynamic Analysis"):
+        if not self.json_enabled:
+            return
+
+        if not cve and not description:
+            return
+
+        self.data["yara_matched"].append({"description" : self.fix(description),})
 
     def log_file(self, data, url = None, params = None):
         if not self.json_enabled:

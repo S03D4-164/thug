@@ -92,6 +92,12 @@ class ThugLogging(BaseLogging, SampleLogging):
 
         log.warning(description)
 
+    def add_yara_matched(self, description = None, cve = None, method = "Dynamic Analysis"):
+        for m in self.resolve_method('add_yara_matched'):
+            m(description, cve, method)
+
+        log.warning(description)
+
     def check_snippet(self, s):
         return len(s) < self.eval_min_length_logging
 
