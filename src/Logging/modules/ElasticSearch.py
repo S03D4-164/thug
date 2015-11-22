@@ -38,6 +38,8 @@ except ImportError:
 
 class ElasticSearch(JSON):
     def __init__(self, thug_version):
+        JSON.__init__(self, thug_version, provider = True)
+
         self.enabled = True
 
         if not ELASTICSEARCH_MODULE:
@@ -48,8 +50,6 @@ class ElasticSearch(JSON):
             self.enabled = False
             return
 
-        JSON.__init__(self, thug_version, provider = True)
-
         if not self.__init_elasticsearch():
             self.enabled = False
             return 
@@ -57,8 +57,22 @@ class ElasticSearch(JSON):
     def __init_config(self):
         self.opts = dict()
 
-        config    = ConfigParser.ConfigParser()
+        config = ConfigParser.ConfigParser()
+
         conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "logging.conf")
+
+        if not os.path.exists(conf_file):
+            if log.configuration_path is None:
+                return False
+
+            conf_file = os.path.join(log.configuration_path, 'logging.conf')
+
+        if not os.path.exists(conf_file):
+            conf_file = os.path.join(log.configuration_path, 'logging.conf.default')
+
+        if not os.path.exists(conf_file):
+            return False
+
         config.read(conf_file)
 
         for option in config.options('elasticsearch'):

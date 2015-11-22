@@ -65,19 +65,35 @@ class MongoDB(object):
     def __init_config(self):
         self.opts = dict()
 
-        config    = ConfigParser.ConfigParser()
-        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "logging.conf")
-        config.read(conf_file)
-
-        for option in config.options('mongodb'):
-            self.opts[option] = config.get('mongodb', option)
-
         if log.ThugOpts.mongodb_address:
             try:
                 (self.opts['host'], self.opts['port']) = log.ThugOpts.mongodb_address.split(':', 1)
                 self.opts['enable'] = 'True'
+                return True
             except:
-                log.warning("Invalid MongoDB address specified at runtime, using default values instead")
+                log.warning("Invalid MongoDB address specified at runtime, using default values instead (if any)")
+
+        config = ConfigParser.ConfigParser()
+
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "logging.conf") 
+        if not os.path.exists(conf_file):
+            if log.configuration_path is None:
+                self.enabled = False
+                return False
+
+            conf_file = os.path.join(log.configuration_path, 'logging.conf')
+
+        if not os.path.exists(conf_file):
+            conf_file = os.path.join(log.configuration_path, 'logging.conf.default')
+
+        if not os.path.exists(conf_file):
+            self.enabled = False
+            return False
+
+        config.read(conf_file)
+
+        for option in config.options('mongodb'):
+            self.opts[option] = config.get('mongodb', option)
 
         if self.opts['enable'].lower() in ('false', ):
             self.enabled = False
@@ -96,7 +112,7 @@ class MongoDB(object):
         try:
             connection = client(self.opts['host'], int(self.opts['port']))
         except:
-            log.info('[MongoDB] MongoDB instance not available')
+            log.warning('[MongoDB] MongoDB instance not available')
             self.enabled = False
             return
 
@@ -245,6 +261,9 @@ class MongoDB(object):
         @description    Description of the exploit
         @cve            CVE number (if available)
         """
+        if not self.enabled:
+            return
+
         exploit = {
             'analysis_id' : self.analysis_id,
             'url_id'      : self.get_url(url),
@@ -285,6 +304,9 @@ class MongoDB(object):
         self.samples.insert(r)
 
     def log_maec11(self, basedir):
+        if not self.enabled:
+            return
+
         if not log.ThugOpts.maec11_logging:
             return
 
@@ -305,6 +327,9 @@ class MongoDB(object):
         self.maec11.insert(analysis)
 
     def log_json(self, basedir):
+        if not self.enabled:
+            return
+
         if not log.ThugOpts.json_logging:
             return
 

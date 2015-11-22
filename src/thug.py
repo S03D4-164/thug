@@ -27,10 +27,11 @@ from Plugins.ThugPlugins import *
 log = logging.getLogger("Thug")
 log.setLevel(logging.WARN)
 
+configuration_path = "/etc/thug"
 
 class Thug(ThugAPI):
     def __init__(self, args):
-        ThugAPI.__init__(self, args)
+        ThugAPI.__init__(self, args, configuration_path)
 
     def usage(self):
         msg = """
@@ -86,7 +87,7 @@ Synopsis:
         -Z, --json-logging      \tEnable JSON logging mode (default: disabled)
         -M, --maec11-logging    \tEnable MAEC11 logging mode (default: disabled)
         -G, --elasticsearch-logging\tEnable ElasticSearch logging mode (default: disabled)
-        -D, --mongodb-address   \tSpecify address and port of the MongoDB instance (format: host:port)
+        -D, --mongodb-address=  \tSpecify address and port of the MongoDB instance (format: host:port)
 
     Proxy Format:
         scheme://[username:password@]host:port (supported schemes: http, socks4, socks5)
@@ -253,7 +254,7 @@ Synopsis:
         return log
 
 
-if __name__ == "__main__":
+def main():
     if not os.getenv('THUG_PROFILE', None):
         Thug(sys.argv[1:])()
     else:
@@ -262,3 +263,6 @@ if __name__ == "__main__":
         cProfile.run('Thug(sys.argv[1:])()', 'countprof')
         p = pstats.Stats('countprof')
         p.print_stats()
+
+if __name__ == "__main__":
+    main()

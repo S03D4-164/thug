@@ -24,15 +24,13 @@ import PyV8
 import traceback
 import hashlib
 import pefile
-import numbers
 import datetime
-import collections
 import urllib
-import new
 import bs4 as BeautifulSoup
 import jsbeautifier
 from .W3C import *
 from .W3C.HTML.HTMLCollection import HTMLCollection
+from .JSClass import *
 from .Navigator import Navigator
 from .Location import Location
 from .Screen import Screen
@@ -49,14 +47,14 @@ from .CCInterpreter import CCInterpreter
 from .compatibility import *
 from ActiveX.ActiveX import _ActiveXObject
 from AST.AST import AST
-from Debugger import Shellcode, Global
+from Debugger import Shellcode
 from Java.java import java
 
 sched = sched.scheduler(time.time, time.sleep)
 log = logging.getLogger("Thug")
 
 
-class Window(PyV8.JSClass):
+class Window(JSClass):
 
     class Timer(object):
         def __init__(self, window, code, delay, repeat, lang = 'JavaScript'):
@@ -137,66 +135,8 @@ class Window(PyV8.JSClass):
         self.java          = java()
 
         self._symbols      = set()
-        self._methods      = tuple()
 
         log.MIMEHandler.window = self
-
-    def __getattr__(self, name):
-        if name in self._symbols:
-            raise AttributeError(name)
-
-        if name in ('__members__', '__methods__'):
-            raise AttributeError(name)
-
-        if name == 'constructor':
-            return PyV8.JSClassConstructor(self.__class__)
-
-        if name == 'prototype':
-            return PyV8.JSClassPrototype(self.__class__)
-
-        prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-
-        if prop and isinstance(prop[0], collections.Callable):
-            return prop[0]()
-
-        context = self.__class__.__dict__['context'].__get__(self, Window)
-
-        try:
-            self._symbols.add(name)
-            symbol = context.eval(name)
-        except:
-            raise AttributeError(name)
-        finally:
-            self._symbols.discard(name)
-
-        if isinstance(symbol, PyV8.JSFunction):
-            #_method = None
-            #
-            #if symbol in self._methods:
-            #   _method = symbol.clone()
-            #
-            #if _method is None:
-            #   _method = new.instancemethod(symbol, self, Window)
-            #   _method = symbol.__get__(self, Window)
-            #
-            #setattr(self, name, _method)
-            #context.locals[name] = _method
-            #return _method
-
-            setattr(self, name, symbol)
-            context.locals[name] = symbol
-            return symbol
-
-        if isinstance(symbol, (thug_string,
-                               bool,
-                               numbers.Number,
-                               datetime.datetime,
-                               PyV8.JSObject)):
-            setattr(self, name, symbol)
-            context.locals[name] = symbol
-            return symbol
-
-        raise AttributeError(name)
 
     @property 
     def closed(self):
@@ -869,8 +809,6 @@ class Window(PyV8.JSClass):
         #if not hasattr(self, '_context'):
             self._context = PyV8.JSContext(self)
             with self._context as ctxt:
-                self._methods = (ctxt.eval('eval'), ctxt.eval('unescape'), )
-
                 thug_js = os.path.join(os.path.dirname(os.path.abspath(__file__)), "thug.js")
                 ctxt.eval(open(thug_js, 'r').read())
 
@@ -938,7 +876,7 @@ class Window(PyV8.JSClass):
                 i += 1
                 continue
 
-            if s[i] == '%' and s[i + 1] == 'u':
+            if s[i] == '%' and (i + 1) < len(s) and  s[i + 1] == 'u':
                 if (i + 6) <= len(s):
                     currchar = int(s[i + 2: i + 4], 16) 
                     nextchar = int(s[i + 4: i + 6], 16) 
@@ -996,30 +934,6 @@ class Window(PyV8.JSClass):
 
         if hasattr(self, 'onload'):
             self.evalScript(self.onload)
-
-    @property
-    def Array(self):
-        return self._context.eval("Array")
-
-    @property
-    def Boolean(self):
-        return self._context.eval("Boolean")
-
-    @property
-    def Date(self):
-        return self._context.eval("Date")
-
-    @property
-    def Math(self):
-        return self._context.eval("Math")
-
-    @property
-    def Number(self):
-        return self._context.eval("Number")
-
-    @property
-    def RegExp(self):
-        return self._context.eval("RegExp")
 
     def Image(self, width = 800, height = 600):
         return self.doc.createElement('img')

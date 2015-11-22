@@ -16,17 +16,14 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 # MA  02111-1307  USA
 
-import PyV8
 import logging
 
-try:
-    from . import Window
-    from . import DFT
-except ImportError:
-    import Window
-    import DFT
-
+import Window
+#from .Window import Window
+from .DFT import DFT
 from .W3C import *
+
+from .JSClass import JSClass
 
 try:
     import urllib.parse as urlparse
@@ -35,7 +32,8 @@ except ImportError:
 
 log = logging.getLogger("Thug")
 
-class Location(PyV8.JSClass):
+
+class Location(JSClass):
     def __init__(self, window):
         self._window = window
 
@@ -72,7 +70,7 @@ class Location(PyV8.JSClass):
             return
 
         #self._window.url = url
-        dft = DFT.DFT(window)
+        dft = DFT(window)
         dft.run()
 
     href = property(get_href, set_href)

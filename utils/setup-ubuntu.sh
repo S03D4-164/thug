@@ -72,14 +72,11 @@ sudo pip install pefile 1>>setup-ubuntu.log
 echo "Installing python library: chardet..."
 sudo pip install chardet 1>>setup-ubuntu.log
 	
-echo "Installing python library: httplib2..."
-sudo pip install httplib2 1>>setup-ubuntu.log
-	
 echo "Installing python library: cssutils..."
 sudo pip install cssutils 1>>setup-ubuntu.log
 
-echo "Installing python library: requesocks..."
-sudo pip install requesocks 1>>setup-ubuntu.log
+echo "Installing python library: PySocks..."
+sudo pip install PySocks 1>>setup-ubuntu.log
 	
 echo "Installing python library: zope..."
 sudo pip install zope.interface 1>>setup-ubuntu.log
@@ -95,8 +92,8 @@ echo "Installing python libraries..."
 echo "Installing python library: pyparsing==1.5.7..."
 sudo easy_install pyparsing==1.5.7
 	
-echo "Installing python library: pydot..."
-sudo pip install pydot 1>>setup-ubuntu.log
+echo "Installing python library: pygraphviz..."
+sudo pip install pygraphviz 1>>setup-ubuntu.log
 	
 echo "Installing python library: python-magic..."
 sudo pip install python-magic 1>>setup-ubuntu.log
